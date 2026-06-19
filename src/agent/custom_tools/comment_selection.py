@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 from typing import Any
 
 
@@ -25,6 +26,46 @@ def _positive_reply_score(comment: dict[str, Any]) -> float:
     return likes * 10 + sentiment * 5 + priority_boost
 
 
+def _is_positive(comment: dict[str, Any]) -> bool:
+    return str(comment.get("category", "")).lower() == "positive"
+
+
+def is_channel_author_comment(comment: dict[str, Any], channel_name: str) -> bool:
+    """True when the comment author is the target channel (not generic YouTube badges)."""
+    return _author_matches_channel(str(comment.get("author", "")), channel_name)
+
+
+def _fallback_positive_pool(
+    analyzed: list[dict[str, Any]],
+    channel_name: str = "",
+) -> list[dict[str, Any]]:
+    """Relaxed pool when strict filters remove every positive comment."""
+    pool: list[dict[str, Any]] = []
+    for comment in analyzed:
+        if not _is_positive(comment):
+            continue
+        if comment.get("agent_replied") or comment.get("posted"):
+            continue
+        if is_channel_author_comment(comment, channel_name):
+            continue
+        if not str(comment.get("text", "")).strip():
+            continue
+        pool.append(comment)
+    return pool
+
+
+def _any_positive_pool(analyzed: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Last-resort pool: any positive comment with text."""
+    return [
+        comment
+        for comment in analyzed
+        if _is_positive(comment)
+        and not comment.get("agent_replied")
+        and not comment.get("posted")
+        and str(comment.get("text", "")).strip()
+    ]
+
+
 def select_top_positive_comments(
     analyzed: list[dict[str, Any]],
     limit: int = 5,
@@ -36,27 +77,37 @@ def select_top_positive_comments(
 
     eligible: list[dict[str, Any]] = []
     for comment in analyzed:
-        if comment.get("category") != "positive":
+        if not _is_positive(comment):
             continue
         if comment.get("agent_replied") or comment.get("posted"):
             continue
-        if comment.get("is_pinned") or comment.get("is_channel_owner"):
+        if comment.get("is_pinned"):
+            continue
+        if is_channel_author_comment(comment, channel_name):
             continue
         if comment.get("channel_replied"):
-            continue
-        if _author_matches_channel(str(comment.get("author", "")), channel_name):
             continue
         eligible.append(comment)
 
     eligible.sort(key=_positive_reply_score, reverse=True)
+    use_fallback = not eligible
+    if use_fallback:
+        eligible = _fallback_positive_pool(analyzed, channel_name)
+        random.shuffle(eligible)
+    if not eligible:
+        eligible = _any_positive_pool(analyzed)
+        random.shuffle(eligible)
+        use_fallback = bool(eligible)
 
     selected: list[dict[str, Any]] = []
     for rank, comment in enumerate(eligible[:limit], start=1):
         enriched = dict(comment)
         enriched["selected_for_reply"] = True
         enriched["reply_rank"] = rank
+        if use_fallback:
+            enriched["fallback_selection"] = True
         selected.append(enriched)
     return selected
 
 
-__all__ = ["select_top_positive_comments"]
+__all__ = ["is_channel_author_comment", "select_top_positive_comments"]

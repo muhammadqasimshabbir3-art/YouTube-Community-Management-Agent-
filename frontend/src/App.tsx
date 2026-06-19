@@ -8,17 +8,21 @@ import { ResultsDashboard } from "./components/ResultsDashboard";
 import { WorkflowPipeline } from "./components/WorkflowPipeline";
 import { useAgentRun } from "./hooks/useAgentRun";
 import { useServerHealth } from "./hooks/useServerHealth";
-import { defaultRunSettings } from "./lib/defaultSettings";
+import { loadRunSettings, saveRunSettings } from "./lib/settingsStorage";
 import type { AgentRunSettings } from "./types";
 
 export default function App() {
   const health = useServerHealth();
   const agent = useAgentRun();
-  const [settings, setSettings] = useState<AgentRunSettings>(defaultRunSettings);
+  const [settings, setSettings] = useState<AgentRunSettings>(loadRunSettings);
 
   const updateSetting = useCallback(
     <K extends keyof AgentRunSettings>(key: K, value: AgentRunSettings[K]) => {
-      setSettings((prev) => ({ ...prev, [key]: value }));
+      setSettings((prev) => {
+        const next = { ...prev, [key]: value };
+        saveRunSettings(next);
+        return next;
+      });
     },
     [],
   );
@@ -50,6 +54,7 @@ export default function App() {
           <WorkflowPipeline
             steps={agent.steps}
             running={agent.running}
+            reconnected={agent.reconnected}
             taskPlanSummary={agent.result?.task_plan_summary}
           />
           <ResultsDashboard result={agent.result} error={agent.error} />

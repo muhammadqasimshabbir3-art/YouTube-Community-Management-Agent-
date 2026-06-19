@@ -384,13 +384,19 @@ select {
 }
 
 .task-plan {
-  margin-bottom: 0.75rem;
-  padding: 0.65rem 0.8rem;
+  margin-bottom: 0.85rem;
+  padding: 0.65rem 0.85rem;
   border-radius: 10px;
-  background: rgba(91, 157, 255, 0.08);
-  border: 1px solid rgba(91, 157, 255, 0.2);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
   font-size: 0.88rem;
-  color: #b8d4ff;
+  color: var(--muted);
+}
+
+.reconnect-banner {
+  border-color: rgba(91, 157, 255, 0.35);
+  color: var(--info);
+  background: rgba(91, 157, 255, 0.08);
 }
 
 .pipeline-steps {

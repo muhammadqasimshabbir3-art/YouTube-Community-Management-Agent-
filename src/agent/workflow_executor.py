@@ -9,7 +9,7 @@ from typing import Any
 
 from langchain_core.messages import AIMessage
 
-from agent.config import get_youtube_config
+from agent.config import apply_runtime_overrides, get_youtube_config
 from agent.custom_tools.comment_analyzer import analyze_comments
 from agent.custom_tools.comment_selection import select_top_positive_comments
 from agent.custom_tools.email_tools import send_smtp_email
@@ -158,13 +158,20 @@ def execute_analyze_comments(state: dict[str, Any]) -> dict[str, Any]:
 
 def execute_select_reply_targets(state: dict[str, Any]) -> dict[str, Any]:
     """Pick up to N top positive comments to reply to after full analysis."""
+    apply_runtime_overrides(state)
     config = get_youtube_config()
-    analyzed = state.get("analyzed_comments") or []
+    analyzed = list(state.get("analyzed_comments") or [])
+    if not analyzed:
+        analyzed = list(state.get("positive_comments") or [])
     channel_name = state.get("youtube_channel_name", "")
     positive_total = len(state.get("positive_comments") or [])
-    limit = config["max_replies_per_video"]
-    if limit <= 0:
+    limit = state.get("max_replies_per_video")
+    if limit is None or int(limit) <= 0:
+        limit = config["max_replies_per_video"]
+    if int(limit) <= 0:
         limit = 5
+    else:
+        limit = int(limit)
     reply_targets = select_top_positive_comments(
         analyzed,
         limit=limit,
@@ -194,7 +201,11 @@ def execute_generate_replies(state: dict[str, Any]) -> dict[str, Any]:
             limit=limit,
             channel_name=channel_name,
         )
-    result = generate_replies(reply_targets, channel_name)
+    result = generate_replies(
+        reply_targets,
+        channel_name,
+        state.get("reply_statistics"),
+    )
     generated = result.get("generated_replies") or []
     history = record_reply_entries(
         generated,
@@ -207,14 +218,20 @@ def execute_generate_replies(state: dict[str, Any]) -> dict[str, Any]:
 
 def execute_post_replies(state: dict[str, Any]) -> dict[str, Any]:
     """Post generated replies when enabled in .env."""
+    apply_runtime_overrides(state)
     config = get_youtube_config()
     replies = list(state.get("generated_replies") or [])
-    if not config["enable_comment_replies"] or not replies:
+    enable_replies = (
+        state.get("enable_comment_replies")
+        if state.get("enable_comment_replies") is not None
+        else config["enable_comment_replies"]
+    )
+    if not enable_replies or not replies:
         stats = dict(state.get("reply_statistics") or {})
         stats["replies_posted"] = 0
         return {"reply_statistics": stats}
 
-    result = post_replies_to_comments(replies)
+    result = post_replies_to_comments(replies, enabled=bool(enable_replies))
     stats = dict(state.get("reply_statistics") or {})
     stats["replies_posted"] = result.get("posted", 0)
     stats["replies_failed"] = result.get("failed", 0)
@@ -238,9 +255,15 @@ def execute_post_replies(state: dict[str, Any]) -> dict[str, Any]:
 
 def execute_generate_new_comment(state: dict[str, Any]) -> dict[str, Any]:
     """Generate a top-level community comment for the latest video."""
+    apply_runtime_overrides(state)
     config = get_youtube_config()
     stats = dict(state.get("reply_statistics") or {})
-    if not config["enable_new_comments"]:
+    enabled = (
+        state.get("enable_new_comments")
+        if state.get("enable_new_comments") is not None
+        else config["enable_new_comments"]
+    )
+    if not enabled:
         stats["new_comments_generated"] = 0
         return {
             "generated_new_comments": [],
@@ -265,16 +288,22 @@ def execute_generate_new_comment(state: dict[str, Any]) -> dict[str, Any]:
 
 def execute_post_new_comment(state: dict[str, Any]) -> dict[str, Any]:
     """Post a generated top-level comment when ENABLE_NEW_COMMENTS=true."""
+    apply_runtime_overrides(state)
     config = get_youtube_config()
     comments = list(state.get("generated_new_comments") or [])
     stats = dict(state.get("reply_statistics") or {})
 
-    if not config["enable_new_comments"] or not comments:
+    enabled = (
+        state.get("enable_new_comments")
+        if state.get("enable_new_comments") is not None
+        else config["enable_new_comments"]
+    )
+    if not enabled or not comments:
         stats["new_comments_posted"] = 0
         stats["new_comments_failed"] = 0
         return {"reply_statistics": stats, "generated_new_comments": comments}
 
-    result = post_new_video_comments(comments)
+    result = post_new_video_comments(comments, enabled=bool(enabled))
     stats["new_comments_posted"] = result.get("posted", 0)
     stats["new_comments_failed"] = result.get("failed", 0)
     updated = result.get("new_comments", comments)

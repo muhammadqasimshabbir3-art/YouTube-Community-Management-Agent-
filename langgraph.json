@@ -4,14 +4,5 @@
   "graphs": {
     "agent": "./src/agent/graph.py:graph"
   },
-  "env": ".env",
-  "dockerfile_lines": [],
-  "http": {
-    "cors": {
-      "allow_origins": ["*"],
-      "allow_methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-      "allow_headers": ["*"],
-      "allow_credentials": true
-    }
-  }
+  "dockerfile_lines": []
 }

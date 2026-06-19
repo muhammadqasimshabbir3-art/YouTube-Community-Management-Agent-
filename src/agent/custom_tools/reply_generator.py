@@ -82,6 +82,7 @@ def generate_reply_for_comment(
 def generate_replies(
     comments: list[dict[str, Any]],
     channel_name: str = "",
+    prior_stats: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Generate replies for pre-selected comment targets based on .env filters."""
     config = get_youtube_config()
@@ -108,6 +109,7 @@ def generate_replies(
         )
 
     stats = {
+        **(prior_stats or {}),
         "total_comments": len(comments),
         "replies_generated": len(generated),
         "replies_skipped": skipped,

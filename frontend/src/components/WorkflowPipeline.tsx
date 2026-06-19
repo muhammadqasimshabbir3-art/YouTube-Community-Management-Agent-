@@ -13,6 +13,7 @@ import type { StepState, StepStatus } from "../types";
 interface WorkflowPipelineProps {
   steps: StepState[];
   running: boolean;
+  reconnected?: boolean;
   taskPlanSummary?: string;
 }
 
@@ -31,7 +32,7 @@ function StatusIcon({ status, emoji }: { status: StepStatus; emoji: string }) {
   }
 }
 
-export function WorkflowPipeline({ steps, running, taskPlanSummary }: WorkflowPipelineProps) {
+export function WorkflowPipeline({ steps, running, reconnected, taskPlanSummary }: WorkflowPipelineProps) {
   const progress = progressPercent(steps);
   const activeStep = steps.find((s) => s.status === "running");
 
@@ -58,6 +59,12 @@ export function WorkflowPipeline({ steps, running, taskPlanSummary }: WorkflowPi
           <span>{progress}%</span>
         </div>
       </div>
+
+      {reconnected && running && (
+        <div className="task-plan reconnect-banner">
+          🔄 Reconnected — agent kept running on the server while you refreshed
+        </div>
+      )}
 
       {taskPlanSummary && <div className="task-plan">📋 {taskPlanSummary}</div>}
 

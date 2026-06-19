@@ -19,7 +19,7 @@ function envStr(key: string, fallback: string): string {
   return raw != null && String(raw).trim() !== "" ? String(raw).trim() : fallback;
 }
 
-/** Pre-fill run settings from root `.env` via VITE_DEFAULT_* keys (optional). */
+/** Pre-fill run settings from root `.env` (VITE_DEFAULT_* or mirrored backend keys). */
 export function defaultRunSettings(): AgentRunSettings {
   return {
     channelName: envStr("VITE_DEFAULT_CHANNEL_NAME", ""),

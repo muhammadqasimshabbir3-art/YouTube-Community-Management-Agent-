@@ -77,7 +77,7 @@ The agent uses **two separate concepts** in `.env`:
 
 **Local:** `./start.sh both` starts LangGraph + UI. Vite proxies `/api` → LangGraph or uses `VITE_LANGGRAPH_API_URL` directly.
 
-**Production:** Deploy LangGraph backend; build frontend with `VITE_LANGGRAPH_API_URL=https://your-server`. CORS is configured in `langgraph.json`.
+**Production:** Deploy LangGraph backend on Fly.io (`:8000`); deploy frontend on Vercel with `VITE_LANGGRAPH_API_URL=https://<fly-app>.fly.dev`. CORS is configured via `CORS_ALLOW_ORIGINS` (not hardcoded).
 
 ---
 
@@ -225,6 +225,9 @@ In the UI:
 | `LANGGRAPH_PORT` | `2024` | LangGraph Server port |
 | `FRONTEND_PORT` | `5173` | Agent Web UI port |
 | `VITE_LANGGRAPH_API_URL` | `http://127.0.0.1:2024` | Frontend → backend URL |
+| `VITE_API_URL` / `NEXT_PUBLIC_API_URL` | — | Aliases for `VITE_LANGGRAPH_API_URL` (Vercel) |
+| `CORS_ALLOW_ORIGINS` | localhost origins | Comma-separated CORS origins for LangGraph API |
+| `PORT` | `8000` | LangGraph API port in Docker/Fly (`2024` for local `langgraph dev`) |
 | `VITE_LANGGRAPH_ASSISTANT_ID` | `agent` | Graph id from `langgraph.json` |
 | `VITE_DEFAULT_CHANNEL_NAME` | — | Pre-fill channel in UI |
 | `VITE_DEFAULT_MAX_REPLIES` | `5` | Pre-fill max replies in UI |
@@ -257,7 +260,11 @@ Per-run UI overrides (sent in graph input): `max_replies_per_video`, `email_reci
 │       ├── pdf_generator.py
 │       └── email_tools.py
 ├── streamlit_ui.py                # Legacy UI (in-process graph)
-├── langgraph.json                 # Server config + CORS
+├── langgraph.json                 # LangGraph server config (graphs, deps)
+├── Dockerfile                     # Fly.io / LangGraph API production image
+├── fly.toml                       # Fly.io deployment config
+├── .dockerignore
+├── requirements.txt               # Exported from pyproject.toml (reference)
 ├── start.sh / setup.sh
 ├── AgentWorkflow.md               # Detailed workflow documentation
 └── reports/                       # Generated HTML/PDF outputs
@@ -276,6 +283,135 @@ After analyzing **all** comments, the agent:
 5. Generates humorous replies; posts when `ENABLE_COMMENT_REPLIES=true`
 
 When `ENABLE_NEW_COMMENTS=false`, the graph **skips** new comment generation and posting entirely.
+
+---
+
+## Production deployment
+
+### Architecture
+
+```
+┌─────────────────────────┐         HTTPS          ┌──────────────────────────┐
+│  Vercel (React/Vite UI) │  ────────────────────▶ │  Fly.io (LangGraph API)  │
+│  frontend/              │   VITE_LANGGRAPH_API_URL│  :8000 / Dockerfile      │
+└─────────────────────────┘                         │  Playwright + secrets    │
+                                                    └──────────────────────────┘
+```
+
+| Component | Platform | Port / URL |
+|-----------|----------|------------|
+| Backend | Fly.io | `https://<app>.fly.dev` (internal `8000`) |
+| Frontend | Vercel | `https://<app>.vercel.app` |
+| Local dev | `./start.sh both` | UI `:5173`, API `:2024` |
+
+---
+
+### Backend — Fly.io
+
+**Prerequisites:** [flyctl](https://fly.io/docs/hands-on/install-flyctl/) installed and logged in (`fly auth login`).
+
+1. **Review config** (already in repo):
+   - `Dockerfile` — LangGraph API + Playwright Chromium
+   - `fly.toml` — port `8000`, 2GB RAM (browser automation)
+   - `.dockerignore` — excludes `.env`, `frontend/`, local data
+
+2. **Create the Fly app** (first time only):
+
+```bash
+fly launch
+# Use existing fly.toml when prompted
+# Do NOT deploy Postgres unless you add LangGraph persistence later
+```
+
+3. **Set secrets** (never commit these):
+
+```bash
+fly secrets set \
+  GROQ_API_KEY="gsk_..." \
+  YOUTUBE_EMAIL="your@gmail.com" \
+  YOUTUBE_PASSWORD="your_password" \
+  LANGSMITH_API_KEY="lsv2_..." \
+  GMAIL_SMTP_USER="your@gmail.com" \
+  GMAIL_APP_PASSWORD="your_app_password" \
+  CORS_ALLOW_ORIGINS="http://localhost:5173,https://your-app.vercel.app"
+```
+
+Optional: `OPENAI_API_KEY`, `GMAIL_DEFAULT_RECIPIENT`, and other vars from `.env.example`.
+
+4. **Deploy:**
+
+```bash
+fly deploy
+fly status
+fly logs
+```
+
+5. **Verify API:**
+
+```bash
+curl https://<your-app>.fly.dev/ok
+```
+
+**Regenerate Dockerfile** after changing `langgraph.json`:
+
+```bash
+uv run langgraph dockerfile -c langgraph.json Dockerfile
+# Re-apply the Playwright install block after the dependency install step (see Dockerfile comment)
+```
+
+---
+
+### Frontend — Vercel
+
+1. **Import repo** in [Vercel](https://vercel.com) → set **Root Directory** to `frontend`.
+
+2. **Environment variables** (Project → Settings → Environment Variables):
+
+| Variable | Example | Required |
+|----------|---------|----------|
+| `VITE_LANGGRAPH_API_URL` | `https://your-app.fly.dev` | Yes |
+| `VITE_LANGGRAPH_ASSISTANT_ID` | `agent` | Yes |
+| `VITE_UI_URL` | `https://your-app.vercel.app` | Optional |
+
+Aliases also supported: `VITE_API_URL`, `NEXT_PUBLIC_API_URL`.
+
+3. **Deploy:**
+
+```bash
+cd frontend
+npm install
+npm run build          # local smoke test
+vercel                 # or connect GitHub for auto-deploy
+```
+
+4. **Update Fly CORS** with your final Vercel URL:
+
+```bash
+fly secrets set CORS_ALLOW_ORIGINS="http://localhost:5173,https://your-app.vercel.app"
+```
+
+---
+
+### CORS (mandatory for production)
+
+LangGraph reads **`CORS_ALLOW_ORIGINS`** at runtime (comma-separated, no spaces).
+
+- **Local:** `http://localhost:5173,http://127.0.0.1:5173` (in `.env` or Fly secrets)
+- **Production:** add your Vercel URL, e.g. `https://your-app.vercel.app`
+
+Do **not** hardcode origins in `langgraph.json` — use the env var so dev and prod differ safely.
+
+---
+
+### requirements.txt
+
+Docker/Fly installs from `pyproject.toml` via `langgraph.json` → `dependencies: ["."]`.
+
+`requirements.txt` is exported for reference:
+
+```bash
+uv export --no-dev --no-hashes -o requirements.txt
+```
 
 ---
 

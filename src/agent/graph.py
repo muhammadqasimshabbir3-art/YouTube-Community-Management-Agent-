@@ -13,8 +13,8 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from typing_extensions import NotRequired, TypedDict
 
-from agent.async_utils import run_in_thread
-from agent.config import apply_runtime_overrides, resolve_target_channel
+from agent.async_utils import run_in_thread, run_playwright
+from agent.config import apply_runtime_overrides, get_youtube_config, resolve_target_channel
 from agent.custom_tools.email_tools import send_email
 from agent.custom_tools.html_report_generator import (
     generate_html_report as generate_html_report_tool,
@@ -362,7 +362,7 @@ def _run_workflow_and_collect(plan, initial_state: dict) -> dict:
 
 async def login_youtube(state: State) -> dict[str, Any]:
     """Log in to YouTube and persist session."""
-    updates = await run_in_thread(execute_youtube_login, _state_as_dict(state))
+    updates = await run_playwright(execute_youtube_login, _state_as_dict(state))
     logged_in = updates.get("logged_in", False)
     content = (
         "Successfully logged in to YouTube." if logged_in else "YouTube login failed."
@@ -372,7 +372,7 @@ async def login_youtube(state: State) -> dict[str, Any]:
 
 async def fetch_channel_data(state: State) -> dict[str, Any]:
     """Fetch comments from the target channel's latest video."""
-    updates = await run_in_thread(execute_fetch_channel_data, _state_as_dict(state))
+    updates = await run_playwright(execute_fetch_channel_data, _state_as_dict(state))
     if updates.get("error"):
         return {
             "messages": [
@@ -468,13 +468,19 @@ async def generate_replies(state: State) -> dict[str, Any]:
 
 async def post_replies(state: State) -> dict[str, Any]:
     """Post replies through browser automation when ENABLE_COMMENT_REPLIES=true."""
+    apply_runtime_overrides(_state_as_dict(state))
     merged = {**_state_as_dict(state)}
-    updates = await run_in_thread(execute_post_replies, merged)
+    updates = await run_playwright(execute_post_replies, merged)
     stats = updates.get("reply_statistics") or merged.get("reply_statistics") or {}
     posted = stats.get("replies_posted", 0)
     failed = stats.get("replies_failed", 0)
     config = get_youtube_config()
-    if not config["enable_comment_replies"]:
+    enable_replies = (
+        state.get("enable_comment_replies")
+        if state.get("enable_comment_replies") is not None
+        else config["enable_comment_replies"]
+    )
+    if not enable_replies:
         content = "Reply posting skipped (ENABLE_COMMENT_REPLIES=false). Replies saved in report."
     elif posted and not failed:
         content = f"Posted {posted} replies to YouTube."
@@ -489,8 +495,14 @@ async def post_replies(state: State) -> dict[str, Any]:
 
 async def generate_new_comment(state: State) -> dict[str, Any]:
     """Generate a top-level community comment for the latest video."""
+    apply_runtime_overrides(_state_as_dict(state))
     config = get_youtube_config()
-    if not config["enable_new_comments"]:
+    enabled = (
+        state.get("enable_new_comments")
+        if state.get("enable_new_comments") is not None
+        else config["enable_new_comments"]
+    )
+    if not enabled:
         return {
             "generated_new_comments": [],
             "messages": [
@@ -510,12 +522,18 @@ async def generate_new_comment(state: State) -> dict[str, Any]:
 
 async def post_new_comment(state: State) -> dict[str, Any]:
     """Post a new top-level comment when ENABLE_NEW_COMMENTS=true."""
-    updates = await run_in_thread(execute_post_new_comment, _state_as_dict(state))
+    apply_runtime_overrides(_state_as_dict(state))
+    updates = await run_playwright(execute_post_new_comment, _state_as_dict(state))
     stats = updates.get("reply_statistics") or {}
     posted = stats.get("new_comments_posted", 0)
     failed = stats.get("new_comments_failed", 0)
     config = get_youtube_config()
-    if not config["enable_new_comments"]:
+    enabled = (
+        state.get("enable_new_comments")
+        if state.get("enable_new_comments") is not None
+        else config["enable_new_comments"]
+    )
+    if not enabled:
         content = "New comment posting skipped (ENABLE_NEW_COMMENTS=false). Text saved in report."
     elif posted and not failed:
         content = f"Posted {posted} new top-level comment on the video."
@@ -531,7 +549,7 @@ async def post_new_comment(state: State) -> dict[str, Any]:
 async def generate_html_report(state: State) -> dict[str, Any]:
     """Generate comprehensive HTML dashboard report."""
     merged = {**_state_as_dict(state)}
-    updates = await run_in_thread(execute_generate_html_report, merged)
+    updates = await run_playwright(execute_generate_html_report, merged)
     html_result = updates.get("html_result", "HTML report generated.")
     return {**updates, "messages": [AIMessage(content=html_result)]}
 
@@ -554,24 +572,30 @@ async def generate_pdf_report(state: State) -> dict[str, Any]:
 
 async def email_report(state: State) -> dict[str, Any]:
     """Email HTML dashboard and PDF reports when enabled."""
+    apply_runtime_overrides(_state_as_dict(state))
     action = state.get("workflow_action", "")
     config = get_youtube_config()
     should_email = (
         action == "email"
         or wants_email_report(get_latest_user_text(state.get("messages") or []))
-        or config["email_reports"]
+        or state.get("email_reports") is True
+        or (state.get("email_reports") is not False and config["email_reports"])
     )
     if not should_email:
         html_path = _state_as_dict(state).get("html_path", "")
         if html_path:
             return {
+                "email_result": "Email skipped — HTML dashboard saved",
                 "messages": [
                     AIMessage(
                         content=f"Email skipped. HTML dashboard saved: {html_path}"
                     )
-                ]
+                ],
             }
-        return {"messages": [AIMessage(content="Email step skipped.")]}
+        return {
+            "email_result": "Email skipped for this run",
+            "messages": [AIMessage(content="Email step skipped.")],
+        }
     updates = await run_in_thread(execute_email_report, _state_as_dict(state))
     email_result = updates.get("email_result", "Email step completed.")
     return {**updates, "messages": [AIMessage(content=email_result)]}
@@ -620,11 +644,22 @@ def route_after_generate_replies(
     state: State,
 ) -> Literal["post_replies", "generate_new_comment", "generate_html_report"]:
     """Skip browser reply posting when disabled; skip new comment when disabled."""
+    apply_runtime_overrides(_state_as_dict(state))
     config = get_youtube_config()
     replies = state.get("generated_replies") or []
-    if config["enable_comment_replies"] and replies:
+    if state.get("enable_comment_replies") is not None:
+        enable_replies = bool(state.get("enable_comment_replies"))
+    else:
+        enable_replies = config["enable_comment_replies"]
+    if state.get("enable_new_comments") is True:
+        enable_new = True
+    elif state.get("enable_new_comments") is False:
+        enable_new = False
+    else:
+        enable_new = config["enable_new_comments"]
+    if enable_replies and replies:
         return "post_replies"
-    if config["enable_new_comments"]:
+    if enable_new:
         return "generate_new_comment"
     return "generate_html_report"
 
@@ -633,8 +668,11 @@ def route_after_post_replies(
     state: State,
 ) -> Literal["generate_new_comment", "generate_html_report"]:
     """Skip new comment generation when ENABLE_NEW_COMMENTS=false."""
+    apply_runtime_overrides(_state_as_dict(state))
     config = get_youtube_config()
-    if config["enable_new_comments"]:
+    if state.get("enable_new_comments") is True or (
+        state.get("enable_new_comments") is not False and config["enable_new_comments"]
+    ):
         return "generate_new_comment"
     return "generate_html_report"
 

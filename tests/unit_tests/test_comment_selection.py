@@ -80,3 +80,30 @@ def test_select_top_positive_comments_skips_agent_replied_and_channel_author():
     )
     assert len(selected) == 1
     assert selected[0]["author"] == "@viewer2"
+
+
+def test_select_top_positive_comments_random_fallback_when_strict_empty():
+    analyzed = [
+        {**_comment("@viewer1", 10), "channel_replied": True},
+        {**_comment("@viewer2", 40), "channel_replied": True},
+        {**_comment("@viewer3", 5), "channel_replied": True},
+    ]
+    selected = select_top_positive_comments(analyzed, limit=5)
+    assert len(selected) == 3
+    assert all(item.get("fallback_selection") for item in selected)
+
+
+def test_select_ignores_false_channel_owner_badge():
+    """Scraper can mark every comment is_channel_owner; selection uses author match."""
+    analyzed = [
+        {**_comment("@viewer1", 10), "is_channel_owner": True},
+        {**_comment("@viewer2", 40), "is_channel_owner": True},
+        _comment("@OldeWorldMelodies", 99),
+    ]
+    selected = select_top_positive_comments(
+        analyzed,
+        limit=5,
+        channel_name="@OldeWorldMelodies",
+    )
+    assert len(selected) == 2
+    assert all(item["author"] != "@OldeWorldMelodies" for item in selected)

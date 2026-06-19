@@ -35,7 +35,7 @@ def test_parse_comment_count():
 
 
 def test_resolve_scrape_target():
-    assert _resolve_scrape_target(23, 0) == 23
+    assert _resolve_scrape_target(23, 0) == 25
     assert _resolve_scrape_target(0, 0) == 500
     assert _resolve_scrape_target(100, 5) == 100
     assert _resolve_scrape_target(0, 20) == 20

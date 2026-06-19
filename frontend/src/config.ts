@@ -1,15 +1,29 @@
 /**
- * Local / deployed connection settings (from root .env via Vite envDir).
+ * Local / deployed connection settings.
  *
- * Local testing (recommended in .env):
+ * Local dev (root .env via Vite envDir):
  *   VITE_LANGGRAPH_API_URL=http://127.0.0.1:2024
- *   VITE_UI_URL=http://localhost:5173
  *
- * Alternative: leave VITE_LANGGRAPH_API_URL empty to use Vite proxy /api → LANGGRAPH_PORT
+ * Vercel production — set in Project → Environment Variables:
+ *   VITE_LANGGRAPH_API_URL=https://<your-fly-app>.fly.dev
+ *   (aliases: VITE_API_URL, NEXT_PUBLIC_API_URL)
+ *
+ * Leave empty locally to use Vite proxy /api → LANGGRAPH_PORT
  */
-const configuredApi = import.meta.env.VITE_LANGGRAPH_API_URL?.trim();
+function readApiUrl(): string {
+  const candidates = [
+    import.meta.env.VITE_LANGGRAPH_API_URL,
+    import.meta.env.VITE_API_URL,
+    import.meta.env.NEXT_PUBLIC_API_URL,
+  ];
+  for (const value of candidates) {
+    const trimmed = value?.trim();
+    if (trimmed) return trimmed;
+  }
+  return "";
+}
 
-export const LANGGRAPH_API_URL = configuredApi || "/api";
+export const LANGGRAPH_API_URL = readApiUrl() || "/api";
 
 export const ASSISTANT_ID =
   import.meta.env.VITE_LANGGRAPH_ASSISTANT_ID?.trim() || "agent";

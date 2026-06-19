@@ -3,10 +3,24 @@
 from __future__ import annotations
 
 import asyncio
+import atexit
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from typing import TypeVar
 
 T = TypeVar("T")
+
+# Playwright sync API is greenlet-bound: page/browser objects must stay on one thread.
+_PLAYWRIGHT_EXECUTOR = ThreadPoolExecutor(
+    max_workers=1, thread_name_prefix="playwright"
+)
+
+
+def _shutdown_playwright_executor() -> None:
+    _PLAYWRIGHT_EXECUTOR.shutdown(wait=False, cancel_futures=True)
+
+
+atexit.register(_shutdown_playwright_executor)
 
 
 def _run_blocking_with_skip(func: Callable[..., T], /, *args, **kwargs) -> T:
@@ -31,3 +45,12 @@ def _run_blocking_with_skip(func: Callable[..., T], /, *args, **kwargs) -> T:
 async def run_in_thread(func: Callable[..., T], /, *args, **kwargs) -> T:
     """Run a blocking function in a worker thread."""
     return await asyncio.to_thread(_run_blocking_with_skip, func, *args, **kwargs)
+
+
+async def run_playwright(func: Callable[..., T], /, *args, **kwargs) -> T:
+    """Run Playwright/browser work on a single dedicated thread."""
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        _PLAYWRIGHT_EXECUTOR,
+        lambda: _run_blocking_with_skip(func, *args, **kwargs),
+    )

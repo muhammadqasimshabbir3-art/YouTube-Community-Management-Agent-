@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import re
+import threading
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -15,6 +16,7 @@ if not os.environ.get("PLAYWRIGHT_BROWSERS_PATH") and _browsers_cache.exists():
 from playwright.sync_api import Page
 
 from agent.config import get_youtube_config, resolve_target_channel
+from agent.custom_tools.comment_selection import is_channel_author_comment
 from agent.custom_tools.browser_tools import (
     _dismiss_optional_screens,
     close_browser_session,
@@ -132,9 +134,9 @@ _EXTRACT_COMMENTS_JS = """
     const isPinned = !!comment.querySelector(
       '#pinned-comment-badge, ytd-pinned-comment-badge-renderer'
     );
-    const isChannelOwner = !!comment.querySelector(
-      'ytd-author-comment-badge-renderer, #author-comment-badge'
-    );
+    // Channel-owner badge is resolved server-side from author vs channel name.
+    // ytd-author-comment-badge-renderer also matches member/verified badges.
+    const isChannelOwner = false;
 
     const repliesSection = thread.querySelector('ytd-comment-replies-renderer');
     let channelReplied = false;
@@ -197,8 +199,11 @@ def _extract_channel_name(page: Page) -> str:
 
 def _resolve_scrape_target(reported_count: int, max_comments: int) -> int:
     """Resolve how many comment threads to load (0 = all reported/visible)."""
+    min_when_unlimited = 25
     if max_comments <= 0:
-        return reported_count if reported_count > 0 else 500
+        if reported_count > 0:
+            return max(reported_count, min_when_unlimited)
+        return 500
     if reported_count > 0:
         return max(max_comments, reported_count)
     return max_comments
@@ -207,14 +212,16 @@ def _resolve_scrape_target(reported_count: int, max_comments: int) -> int:
 def _normalize_js_comment(
     raw: dict[str, Any],
     video: dict[str, str],
+    channel_name: str = "",
 ) -> dict[str, Any]:
     """Convert a browser-extracted comment dict into workflow format."""
     thread_index = int(raw.get("thread_index", 0))
     youtube_comment_id = str(raw.get("youtube_comment_id") or "").strip()
     comment_id = youtube_comment_id or f"{video['video_id']}_{thread_index}"
     channel_replied = bool(raw.get("channel_replied"))
+    author = raw.get("author") or "Unknown"
     return {
-        "author": raw.get("author") or "Unknown",
+        "author": author,
         "text": raw.get("text") or "",
         "likes": _parse_likes(str(raw.get("likes_raw") or "")),
         "timestamp": raw.get("timestamp") or "",
@@ -222,7 +229,9 @@ def _normalize_js_comment(
         "agent_replied": False,
         "channel_replied": channel_replied,
         "is_pinned": bool(raw.get("is_pinned")),
-        "is_channel_owner": bool(raw.get("is_channel_owner")),
+        "is_channel_owner": is_channel_author_comment(
+            {"author": author}, channel_name
+        ),
         "video_id": video["video_id"],
         "video_title": video["title"],
         "video_url": video["url"],
@@ -245,6 +254,21 @@ def _parse_comment_count(text: str) -> int:
         return 0
 
 
+def _current_thread_id() -> int:
+    return threading.get_ident()
+
+
+def _session_owned_by_current_thread() -> bool:
+    stored = _BROWSER_SESSION.get("thread_id")
+    return stored is not None and int(stored) == _current_thread_id()
+
+
+def _discard_cross_thread_session() -> None:
+    """Drop stale Playwright handles created on another worker thread."""
+    if _BROWSER_SESSION and not _session_owned_by_current_thread():
+        _BROWSER_SESSION.clear()
+
+
 def _store_browser_session(
     playwright: Any,
     browser: Any,
@@ -261,12 +285,18 @@ def _store_browser_session(
             "context": context,
             "page": page,
             "video_url": video_url,
+            "thread_id": _current_thread_id(),
         }
     )
 
 
 def release_browser_session() -> None:
     """Close and clear any stored Playwright session."""
+    if not _BROWSER_SESSION:
+        return
+    if not _session_owned_by_current_thread():
+        _BROWSER_SESSION.clear()
+        return
     playwright = _BROWSER_SESSION.get("playwright")
     browser = _BROWSER_SESSION.get("browser")
     context = _BROWSER_SESSION.get("context")
@@ -275,6 +305,7 @@ def release_browser_session() -> None:
 
 
 def _get_stored_page() -> Page | None:
+    _discard_cross_thread_session()
     page = _BROWSER_SESSION.get("page")
     return page if page is not None else None
 
@@ -299,6 +330,7 @@ def _acquire_page_for_posting() -> tuple[Any, Any, Any, Page, bool, bool]:
 
 def prepare_browser_for_posting(video_url: str = "") -> tuple[Page | None, str]:
     """Ensure the Chrome tab stays open on the target video for posting."""
+    _discard_cross_thread_session()
     config = get_youtube_config()
     target = (video_url or str(_BROWSER_SESSION.get("video_url") or "")).strip()
 
@@ -786,7 +818,7 @@ def _scroll_to_load_more_comments(page: Page, target_count: int) -> int:
             stale_rounds += 1
         else:
             stale_rounds = 0
-        if stale_rounds >= 5:
+        if stale_rounds >= 8:
             break
         last_count = current_count
         page.evaluate(
@@ -802,11 +834,15 @@ def _scroll_to_load_more_comments(page: Page, target_count: int) -> int:
               if (section) {
                 section.scrollTop = section.scrollHeight;
               }
-              window.scrollBy(0, 1400);
+              const renderer = document.querySelector('ytd-comments#comments #contents');
+              if (renderer) {
+                renderer.scrollTop = renderer.scrollHeight;
+              }
+              window.scrollBy(0, 1600);
             }
             """
         )
-        page.wait_for_timeout(1300)
+        page.wait_for_timeout(1600)
 
     return page.locator(COMMENT_THREAD_SELECTOR).count()
 
@@ -815,6 +851,7 @@ def _extract_comments_via_js(
     page: Page,
     video: dict[str, str],
     max_comments: int,
+    channel_name: str = "",
 ) -> list[dict[str, Any]]:
     """Extract comments from the modern YouTube comment DOM via page.evaluate."""
     try:
@@ -826,7 +863,7 @@ def _extract_comments_via_js(
     for raw in raw_comments or []:
         if not isinstance(raw, dict):
             continue
-        normalized = _normalize_js_comment(raw, video)
+        normalized = _normalize_js_comment(raw, video, channel_name)
         if normalized.get("text"):
             comments.append(normalized)
     return comments
@@ -836,6 +873,7 @@ def _parse_comment_thread(
     thread,
     video: dict[str, str],
     index: int,
+    channel_name: str = "",
 ) -> dict[str, Any] | None:
     """Extract one comment thread into a normalized dict (Playwright locator fallback)."""
     try:
@@ -886,12 +924,6 @@ def _parse_comment_thread(
             ).count()
             > 0
         )
-        is_channel_owner = (
-            comment_root.locator(
-                "ytd-author-comment-badge-renderer, #author-comment-badge"
-            ).count()
-            > 0
-        )
         channel_replied = (
             thread.locator(
                 "ytd-comment-replies-renderer ytd-author-comment-badge-renderer"
@@ -909,7 +941,9 @@ def _parse_comment_thread(
             "agent_replied": False,
             "channel_replied": channel_replied,
             "is_pinned": is_pinned,
-            "is_channel_owner": is_channel_owner,
+            "is_channel_owner": is_channel_author_comment(
+                {"author": author or "Unknown"}, channel_name
+            ),
             "video_id": video["video_id"],
             "video_title": video["title"],
             "video_url": video["url"],
@@ -925,6 +959,7 @@ def _extract_comments_from_video(
     page: Page,
     video: dict[str, str],
     max_comments: int,
+    channel_name: str = "",
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Open a video page and extract metadata plus comment data."""
     page.goto(video["url"], wait_until="load", timeout=60000)
@@ -957,15 +992,27 @@ def _extract_comments_from_video(
     loaded_threads = _scroll_to_load_more_comments(page, scrape_target)
 
     extract_limit = max_comments if max_comments > 0 else 0
-    comments = _extract_comments_via_js(page, video, extract_limit)
+    comments = _extract_comments_via_js(page, video, extract_limit, channel_name)
 
-    if not comments:
-        comment_threads = page.locator(COMMENT_THREAD_SELECTOR)
-        limit = extract_limit if extract_limit > 0 else comment_threads.count()
-        for index in range(
-            min(comment_threads.count(), limit or comment_threads.count())
-        ):
-            parsed = _parse_comment_thread(comment_threads.nth(index), video, index)
+    comment_threads = page.locator(COMMENT_THREAD_SELECTOR)
+    thread_count = comment_threads.count()
+    if len(comments) < thread_count:
+        fallback: list[dict[str, Any]] = []
+        limit = extract_limit if extract_limit > 0 else thread_count
+        for index in range(min(thread_count, limit or thread_count)):
+            parsed = _parse_comment_thread(
+                comment_threads.nth(index), video, index, channel_name
+            )
+            if parsed:
+                fallback.append(parsed)
+        if len(fallback) > len(comments):
+            comments = fallback
+    elif not comments:
+        limit = extract_limit if extract_limit > 0 else thread_count
+        for index in range(min(thread_count, limit or thread_count)):
+            parsed = _parse_comment_thread(
+                comment_threads.nth(index), video, index, channel_name
+            )
             if parsed:
                 comments.append(parsed)
 
@@ -1042,6 +1089,7 @@ def fetch_channel_data(
             page,
             latest_video,
             config["max_comments_per_video"],
+            resolved_name,
         )
         latest_video_enriched = merge_video_records(latest_video, video_metadata)
 
@@ -1336,14 +1384,36 @@ def _post_on_page(
     *,
     replies: list[dict[str, Any]] | None = None,
     new_comments: list[dict[str, Any]] | None = None,
+    post_replies_enabled: bool | None = None,
+    post_new_comments_enabled: bool | None = None,
 ) -> dict[str, Any]:
     """Post replies and/or new comments on the current or given video page."""
     replies = list(replies or [])
     new_comments = list(new_comments or [])
     config = get_youtube_config()
+    replies_enabled = (
+        post_replies_enabled
+        if post_replies_enabled is not None
+        else config["enable_comment_replies"]
+    )
+    new_comments_enabled = (
+        post_new_comments_enabled
+        if post_new_comments_enabled is not None
+        else config["enable_new_comments"]
+    )
 
     if video_url:
-        _ensure_page_on_video(page, video_url)
+        try:
+            _ensure_page_on_video(page, video_url)
+        except Exception as exc:
+            msg = str(exc)
+            return {
+                "posted": 0,
+                "failed": len(replies) + len(new_comments),
+                "error": msg,
+                "replies": replies,
+                "new_comments": new_comments,
+            }
     elif not _is_page_alive(page):
         return {
             "posted": 0,
@@ -1355,7 +1425,7 @@ def _post_on_page(
 
     reply_posted = reply_failed = 0
     for reply in replies:
-        if not config["enable_comment_replies"]:
+        if not replies_enabled:
             break
         target_url = str(reply.get("video_url") or video_url or "")
         if target_url:
@@ -1375,7 +1445,7 @@ def _post_on_page(
 
     new_posted = new_failed = 0
     for item in new_comments[: config["max_new_comments"]]:
-        if not config["enable_new_comments"]:
+        if not new_comments_enabled:
             break
         success, error = post_video_comment(page, item.get("comment_text", ""))
         if success:
@@ -1402,15 +1472,20 @@ def _post_on_page(
     }
 
 
-def post_new_video_comments(comments: list[dict[str, Any]]) -> dict[str, Any]:
+def post_new_video_comments(
+    comments: list[dict[str, Any]],
+    *,
+    enabled: bool | None = None,
+) -> dict[str, Any]:
     """Post generated top-level comments, reusing the open browser when available."""
     config = get_youtube_config()
-    if not config["enable_new_comments"]:
+    post_enabled = enabled if enabled is not None else config["enable_new_comments"]
+    if not post_enabled:
         return {
             "posted": 0,
             "skipped": len(comments),
             "failed": 0,
-            "message": "New comments disabled in .env",
+            "message": "New comments disabled",
             "new_comments": comments,
         }
 
@@ -1418,48 +1493,98 @@ def post_new_video_comments(comments: list[dict[str, Any]]) -> dict[str, Any]:
     try:
         page, error = prepare_browser_for_posting(video_url)
         if error or page is None:
+            msg = error or "Browser not available"
+            for item in comments:
+                item["posted"] = False
+                item["post_error"] = msg
             return {
                 "posted": 0,
                 "failed": len(comments),
-                "error": error or "Browser not available",
+                "error": msg,
                 "new_comments": comments,
             }
 
-        result = _post_on_page(page, video_url, new_comments=comments)
+        result = _post_on_page(
+            page,
+            video_url,
+            new_comments=comments,
+            post_new_comments_enabled=True,
+        )
         return {
             "posted": result.get("new_posted", 0),
             "failed": result.get("new_failed", 0),
             "new_comments": result.get("new_comments", comments),
+            "error": result.get("error"),
         }
     except Exception as exc:
-        return {"posted": 0, "failed": len(comments), "error": str(exc), "new_comments": comments}
+        msg = str(exc)
+        for item in comments:
+            item["posted"] = False
+            item["post_error"] = msg
+        return {
+            "posted": 0,
+            "failed": len(comments),
+            "error": msg,
+            "new_comments": comments,
+        }
 
 
-def post_replies_to_comments(replies: list[dict[str, Any]]) -> dict[str, Any]:
+def post_replies_to_comments(
+    replies: list[dict[str, Any]],
+    *,
+    enabled: bool | None = None,
+) -> dict[str, Any]:
     """Post generated replies, reusing the open browser session from scrape when available."""
     config = get_youtube_config()
-    if not config["enable_comment_replies"]:
+    post_enabled = enabled if enabled is not None else config["enable_comment_replies"]
+    if not post_enabled:
         return {
             "posted": 0,
             "skipped": len(replies),
-            "message": "Replies disabled in .env",
+            "message": "Replies disabled",
         }
 
     video_url = str(replies[0].get("video_url") or "") if replies else ""
     try:
         page, error = prepare_browser_for_posting(video_url)
         if error or page is None:
-            return {"posted": 0, "failed": len(replies), "error": error or "Browser not available"}
+            msg = error or "Browser not available"
+            for reply in replies:
+                reply["posted"] = False
+                reply["post_error"] = msg
+            return {
+                "posted": 0,
+                "failed": len(replies),
+                "error": msg,
+                "replies": replies,
+                "failed_replies": list(replies),
+            }
 
-        result = _post_on_page(page, video_url, replies=replies)
+        result = _post_on_page(
+            page,
+            video_url,
+            replies=replies,
+            post_replies_enabled=True,
+        )
         return {
             "posted": result.get("posted", 0),
             "failed": result.get("failed", 0),
             "replies": result.get("replies", replies),
             "failed_replies": result.get("failed_replies", []),
+            "error": result.get("error"),
         }
     except Exception as exc:
-        return {"posted": 0, "failed": len(replies), "error": str(exc)}
+        msg = str(exc)
+        for reply in replies:
+            reply["posted"] = False
+            reply["post_error"] = msg
+        return {
+            "posted": 0,
+            "failed": len(replies),
+            "error": msg,
+            "replies": replies,
+            "failed_replies": list(replies),
+        }
 
 
 __all__ = [
