@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Community Dashboard — @BBFisLive</title>
+  <style>
+    :root {
+      --bg: #0f0f0f; --card: #1a1a1a; --text: #f1f1f1; --muted: #aaaaaa;
+      --accent: #ff0000; --accent2: #cc0000; --border: #303030;
+      --green: #2ecc71; --yellow: #f1c40f; --red: #e74c3c; --blue: #3498db; --purple: #9b59b6;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Segoe UI', Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .header { background: linear-gradient(135deg, #1a1a1a 0%, #2d0a0a 100%); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+    .header h1 { margin: 0 0 8px; font-size: 1.8rem; }
+    .header .sub { color: var(--muted); }
+    .grid { display: grid; gap: 16px; }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+    .card h2 { margin: 0 0 14px; font-size: 1.1rem; color: #fff; border-bottom: 2px solid var(--accent); padding-bottom: 8px; }
+    .metric { text-align: center; }
+    .metric .val { font-size: 2rem; font-weight: 700; color: var(--accent); }
+    .metric .lbl { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .video-hero { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
+    .thumb { width: 100%; border-radius: 10px; aspect-ratio: 16/9; object-fit: cover; background: #222; }
+    .thumb.placeholder { display:flex; align-items:center; justify-content:center; min-height:120px; color:var(--muted); }
+    .meta dt { color: var(--muted); font-size: 0.8rem; margin-top: 10px; }
+    .meta dd { margin: 4px 0 0; font-weight: 600; }
+    .desc { color: #ccc; line-height: 1.5; white-space: pre-wrap; max-height: 160px; overflow: auto; }
+    .bar-row { margin-bottom: 12px; }
+    .bar-label { display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px; }
+    .bar-track { height: 10px; background: #2a2a2a; border-radius: 999px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 999px; }
+    .summary { line-height: 1.7; color: #ddd; white-space: pre-wrap; }
+    ul.recs { margin: 0; padding-left: 20px; line-height: 1.8; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th, td { border-bottom: 1px solid var(--border); padding: 10px 8px; text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--card); }
+    .comment-text { max-width: 320px; }
+    .reply { max-width: 260px; color: #9fe870; }
+    .table-wrap { max-height: 420px; overflow: auto; border: 1px solid var(--border); border-radius: 10px; }
+    .footer { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 28px; }
+    a { color: #3ea6ff; }
+    @media (max-width: 700px) { .video-hero { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>YouTube Community Dashboard</h1>
+      <div class="sub">@BBFisLive · Generated 2026-06-19 11:49:07</div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Video Overview</h2>
+      <div class="video-hero">
+        <img class="thumb" src="https://i.ytimg.com/vi/oqjPDT8xjys/maxresdefault.jpg" alt="Video thumbnail" />
+        <dl class="meta">
+          <dt>Title</dt><dd>FINALLY VAGABOND FINALE🔥| Part 12 | Complete Story of Vagabond Explained in Hindi | BBF LIVE</dd>
+          <dt>Video URL</dt><dd><a href="https://www.youtube.com/watch?v=oqjPDT8xjys">https://www.youtube.com/watch?v=oqjPDT8xjys</a></dd>
+          <dt>Video ID</dt><dd>oqjPDT8xjys</dd>
+          <dt>Views</dt><dd>41.2K views</dd>
+          <dt>Likes</dt><dd>like this video along with 3,014 other people</dd>
+          <dt>Dislikes</dt><dd>Dislike this video</dd>
+          <dt>Duration</dt><dd>3:24:07</dd>
+          <dt>Category</dt><dd></dd>
+          <dt>Subscribers</dt><dd></dd>
+          <dt>Comments (on video)</dt><dd>785 Comments</dd>
+          <dt>Published</dt><dd>2026-06-15</dd>
+          <dt>Channel URL</dt><dd><a href="https://www.youtube.com/@BBFisLive/videos">https://www.youtube.com/@BBFisLive/videos</a></dd>
+        </dl>
+      </div>
+      <dt style="color:var(--muted);font-size:0.8rem;margin-top:16px">What this video is about</dt>
+      <div class="summary">Here&#x27;s a summary of the YouTube video in 2-4 clear sentences for a community manager:
+
+This video is the final episode of a 12-part series explaining the complete story of the manga &quot;Vagabond&quot; in Hindi. The creator, Abu Talha, has covered chapters 1-327 of the series, but notes that the writer has quit, leaving the story incomplete. The video is intended for fans of the manga and anime, providing a recap and explanation of the story in Hindi, making it accessible to a Hindi-speaking audience.</div>
+      <dt style="color:var(--muted);font-size:0.8rem;margin-top:16px">Full description</dt>
+      <div class="desc">FINALLY VAGABOND FINALE🔥| Part 12 | Complete Story of Vagabond Explained in Hindi | BBF LIVE
+
+Vagabond All Parts -    • Vagabond Explained in Hindi  
+
+This is the last episode of vagabond in hindi. I have completed full story of vagabond chapter 1  to vagabond chapter 327 in hindi. People have been waiting for vagabond chapter 328 but the writer has quit this masterpiece!
+
+One Piece Live Channel:    / @bbf-onepiecearmy  
+Instagram :    / heyy_abutalha  
+Twitter: https://x.com/BBF_LIVE
+Facebook:   / bbfliveofficial  
+
+Discord Link -   / discord  
+Facebook Group:   / 106anime  
+
+Subscribe to our second channel:
+Link:    / @vibewithsenpai9459  
+
+business inquiries: bbfislive@gmail.com
+
+
+hindimanga
+mangahindi
+mangaexplnation
+mangaexplanationinhindi
+animeexplanation
+animeexplanaionhindi
+anime recap hindi
+anime recap in hindi
+vagabond explained in hindi
+vagabond manga hindi
+vagabond in hindi
+vagabond episode 1
+vagabond episode 1 in hindi
+vagabond recap
+vagabond recap hindi
+vagabond anime
+vagabond hindi
+explained in hindi
+anime
+anime review
+anime video
+manga
+shinmen takezi
+miyamotomusashi
+
+#vagabond #manga #anime 
+----------------------------------------------------------
+Background Music:    • NoobGamer BBF All Background Music  
+
+I do not own these gifs or songs. Full credit goes to the creators. If you are the creator of any of these and wish for me to remove it,  message me and I will take it out immediately.
+───────────────────────────────────────────────
+
+About Myself -
+ Hey, My name is Abu Talha and I&#x27;m college dropped out, I&#x27;m full time streamer/content creator. this is family-friendly Channel and all the members can watch it together, in different rooms :D</div>
+    </div>
+
+    <div class="grid grid-4" style="margin-bottom:24px">
+      <div class="card metric"><div class="val">5</div><div class="lbl">Comments Analyzed</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">Unanswered</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">Replies Generated</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">Replies Posted</div></div>
+      <div class="card metric"><div class="val">0.5</div><div class="lbl">Avg Sentiment Score</div></div>
+      <div class="card metric"><div class="val">5</div><div class="lbl">High Priority</div></div>
+      <div class="card metric"><div class="val">40.0%</div><div class="lbl">Positive</div></div>
+      <div class="card metric"><div class="val">0.0%</div><div class="lbl">Negative</div></div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:24px">
+      <div class="card">
+        <h2>Comment Categories</h2>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Positive</span><span>2 (40.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:40.0%;background:var(--green)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Negative</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:var(--red)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Neutral</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#95a5a6"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Questions</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:var(--blue)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Suggestions</span><span>3 (60.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:60.0%;background:var(--purple)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Spam</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#7f8c8d"></div></div>
+    </div>
+      </div>
+      <div class="card">
+        <h2>Executive Summary (LLM)</h2>
+        <div class="summary">**Executive Summary: YouTube Community Management Dashboard Report for @BBFisLive**
+
+**Key Highlights:**
+
+The latest video, &quot;FINALLY VAGABOND FINALE🔥| Part 12 | Complete Story of Vagabond Explained in Hindi | BBF LIVE,&quot; has garnered 41.2K views and 3,014 likes since its publication on June 15, 2026. This indicates a strong engagement with the audience, particularly in the context of the Vagabond series.
+
+**Audience Sentiment and Engagement Quality:**
+
+The video&#x27;s comment section has received 5 comments, with 2 positive and 0 negative comments. This suggests a generally positive audience sentiment towards the content. However, the lack of questions and unanswered comments indicates a relatively low level of audience engagement.
+
+**Risks and Opportunities:**
+
+The main risk associated with this video is the potential for audience fatigue, given the completion of the Vagabond series. To mitigate this risk, the creator should consider developing a content strategy that builds upon the existing audience interest, such as creating related content or exploring new series. Opportunities for growth include leveraging the existing audience engagement to promote other content and exploring collaborations with other creators in the anime or manga niche.
+
+**Recommended Creator Actions:**
+
+1. Develop a content strategy that builds upon the existing audience interest in the Vagabond series.
+2. Explore collaborations with other creators in the anime or manga niche to expand the audience reach.
+3. Monitor and respond to comments to maintain a high level of audience engagement.
+4. Consider creating related content, such as analysis or discussion videos, to keep the audience engaged.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Recommended Actions</h2>
+      <ul class="recs"><li>Community engagement looks healthy. Keep monitoring new comments.</li></ul>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Reply History — What We Replied To</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>When</th><th>Author</th><th>Category</th><th>Original Comment</th><th>Our Reply</th><th>Status</th>
+          </tr></thead>
+          <tbody><tr><td colspan='6'>No reply history recorded</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Comments by Category</h2>
+      
+    <div class="card" style="margin-bottom:16px;border-left:4px solid var(--green)">
+      <h2>Positive Comments (2)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Author</th><th>Priority</th><th>Sentiment</th><th>Likes</th><th>Time</th><th>Comment</th>
+          </tr></thead>
+          <tbody><tr><td>@samarthtiwari2032</td><td>positive</td><td>high</td><td>0.8</td><td>23</td><td></td><td class='comment-text'>Bhai ab berserk please</td></tr>
+<tr><td>@Straw_Hat009</td><td>positive</td><td>high</td><td>0.9</td><td>19</td><td></td><td class='comment-text'>Next berserk</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+      <div class='card' style='margin-bottom:16px'><h2>Negative Comments (0)</h2><p class='summary'>None</p></div>
+      <div class='card' style='margin-bottom:16px'><h2>Neutral Comments (0)</h2><p class='summary'>None</p></div>
+      <div class='card' style='margin-bottom:16px'><h2>Questions (0)</h2><p class='summary'>None</p></div>
+      
+    <div class="card" style="margin-bottom:16px;border-left:4px solid var(--purple)">
+      <h2>Suggestions (3)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Author</th><th>Priority</th><th>Sentiment</th><th>Likes</th><th>Time</th><th>Comment</th>
+          </tr></thead>
+          <tbody><tr><td>@BBFisLive</td><td>suggestion</td><td>high</td><td>0.0</td><td>51</td><td></td><td class='comment-text'>Follow on Instagram :  https://instagram.com/heyy_abutalha</td></tr>
+<tr><td>@godabhigamer7085</td><td>suggestion</td><td>high</td><td>0.0</td><td>358</td><td></td><td class='comment-text'>vote for next manga BERSERK</td></tr>
+<tr><td>@Rocks_D_Xebec_kaizoku</td><td>suggestion</td><td>high</td><td>0.8</td><td>20</td><td></td><td class='comment-text'>Vote for next manga : Berserk</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+      <div class='card' style='margin-bottom:16px'><h2>Spam (0)</h2><p class='summary'>None</p></div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>All Analyzed Comments (5)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Author</th><th>Category</th><th>Priority</th><th>Sentiment</th>
+            <th>Likes</th><th>Time</th><th>Comment</th>
+          </tr></thead>
+          <tbody><tr><td>@BBFisLive</td><td>suggestion</td><td>high</td><td>0.0</td><td>51</td><td></td><td class='comment-text'>Follow on Instagram :  https://instagram.com/heyy_abutalha</td></tr>
+<tr><td>@godabhigamer7085</td><td>suggestion</td><td>high</td><td>0.0</td><td>358</td><td></td><td class='comment-text'>vote for next manga BERSERK</td></tr>
+<tr><td>@Rocks_D_Xebec_kaizoku</td><td>suggestion</td><td>high</td><td>0.8</td><td>20</td><td></td><td class='comment-text'>Vote for next manga : Berserk</td></tr>
+<tr><td>@samarthtiwari2032</td><td>positive</td><td>high</td><td>0.8</td><td>23</td><td></td><td class='comment-text'>Bhai ab berserk please</td></tr>
+<tr><td>@Straw_Hat009</td><td>positive</td><td>high</td><td>0.9</td><td>19</td><td></td><td class='comment-text'>Next berserk</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Generated AI Replies (0)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Author</th><th>Category</th><th>Priority</th><th>Sentiment</th>
+            <th>Likes</th><th>Time</th><th>Original Comment</th><th>AI Reply</th>
+          </tr></thead>
+          <tbody><tr><td colspan='7'>No data</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">Generated by YouTube Community Manager Agent</div>
+  </div>
+</body>
+</html>

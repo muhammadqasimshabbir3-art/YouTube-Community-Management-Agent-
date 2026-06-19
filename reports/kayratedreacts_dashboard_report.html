@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Community Dashboard — /@KAYRatedReacts</title>
+  <style>
+    :root {
+      --bg: #0f0f0f; --card: #1a1a1a; --text: #f1f1f1; --muted: #aaaaaa;
+      --accent: #ff0000; --accent2: #cc0000; --border: #303030;
+      --green: #2ecc71; --yellow: #f1c40f; --red: #e74c3c; --blue: #3498db; --purple: #9b59b6;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Segoe UI', Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .header { background: linear-gradient(135deg, #1a1a1a 0%, #2d0a0a 100%); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+    .header h1 { margin: 0 0 8px; font-size: 1.8rem; }
+    .header .sub { color: var(--muted); }
+    .grid { display: grid; gap: 16px; }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+    .card h2 { margin: 0 0 14px; font-size: 1.1rem; color: #fff; border-bottom: 2px solid var(--accent); padding-bottom: 8px; }
+    .metric { text-align: center; }
+    .metric .val { font-size: 2rem; font-weight: 700; color: var(--accent); }
+    .metric .lbl { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .video-hero { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
+    .thumb { width: 100%; border-radius: 10px; aspect-ratio: 16/9; object-fit: cover; background: #222; }
+    .thumb.placeholder { display:flex; align-items:center; justify-content:center; min-height:120px; color:var(--muted); }
+    .meta dt { color: var(--muted); font-size: 0.8rem; margin-top: 10px; }
+    .meta dd { margin: 4px 0 0; font-weight: 600; }
+    .desc { color: #ccc; line-height: 1.5; white-space: pre-wrap; max-height: 160px; overflow: auto; }
+    .bar-row { margin-bottom: 12px; }
+    .bar-label { display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px; }
+    .bar-track { height: 10px; background: #2a2a2a; border-radius: 999px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 999px; }
+    .summary { line-height: 1.7; color: #ddd; white-space: pre-wrap; }
+    ul.recs { margin: 0; padding-left: 20px; line-height: 1.8; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th, td { border-bottom: 1px solid var(--border); padding: 10px 8px; text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--card); }
+    .comment-text { max-width: 320px; }
+    .reply { max-width: 260px; color: #9fe870; }
+    .table-wrap { max-height: 420px; overflow: auto; border: 1px solid var(--border); border-radius: 10px; }
+    .footer { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 28px; }
+    a { color: #3ea6ff; }
+    @media (max-width: 700px) { .video-hero { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>YouTube Community Dashboard</h1>
+      <div class="sub">/@KAYRatedReacts · Generated 2026-06-19 11:01:20</div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Video Overview</h2>
+      <div class="video-hero">
+        <div class="thumb placeholder">No thumbnail</div>
+        <dl class="meta">
+          <dt>Title</dt><dd>N/A</dd>
+          <dt>Video URL</dt><dd><a href=""></a></dd>
+          <dt>Video ID</dt><dd></dd>
+          <dt>Views</dt><dd>N/A</dd>
+          <dt>Likes</dt><dd>N/A</dd>
+          <dt>Dislikes</dt><dd>N/A</dd>
+          <dt>Duration</dt><dd>N/A</dd>
+          <dt>Category</dt><dd>N/A</dd>
+          <dt>Subscribers</dt><dd>N/A</dd>
+          <dt>Comments (on video)</dt><dd>N/A</dd>
+          <dt>Published</dt><dd>N/A</dd>
+          <dt>Channel URL</dt><dd><a href="https://www.youtube.com/@KAYRatedReacts">https://www.youtube.com/@KAYRatedReacts</a></dd>
+        </dl>
+      </div>
+      <dt style="color:var(--muted);font-size:0.8rem;margin-top:16px">Description</dt>
+      <div class="desc">No description available.</div>
+    </div>
+
+    <div class="grid grid-4" style="margin-bottom:24px">
+      <div class="card metric"><div class="val">0</div><div class="lbl">Comments Analyzed</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">Unanswered</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">Replies Generated</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">Replies Posted</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">Avg Sentiment Score</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">High Priority</div></div>
+      <div class="card metric"><div class="val">0.0%</div><div class="lbl">Positive</div></div>
+      <div class="card metric"><div class="val">0.0%</div><div class="lbl">Negative</div></div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:24px">
+      <div class="card">
+        <h2>Comment Categories</h2>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Positive</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:var(--green)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Negative</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:var(--red)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Neutral</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#95a5a6"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Questions</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:var(--blue)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Suggestions</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:var(--purple)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Spam</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#7f8c8d"></div></div>
+    </div>
+      </div>
+      <div class="card">
+        <h2>Executive Summary (LLM)</h2>
+        <div class="summary">**Executive Summary: /@KAYRatedReacts Community Management Dashboard Report**
+
+The /@KAYRatedReacts YouTube channel has a relatively low level of engagement, with no comments on the latest video. This suggests that the community is not actively interacting with the content, which may indicate a lack of audience connection or a need for more engaging content. The absence of comments also limits the opportunity for the creator to build relationships with their audience and gather feedback.
+
+**Audience Sentiment and Engagement Quality**
+
+The lack of comments on the latest video makes it challenging to assess audience sentiment. However, the overall engagement metrics suggest that the community is not highly engaged with the content. To improve engagement quality, the creator may consider revising their content strategy to better resonate with their audience. This could involve creating more interactive content, such as Q&amp;A sessions or live streams, or incorporating more audience-driven elements into their videos.
+
+**Risks and Opportunities**
+
+The low level of engagement poses a risk to the channel&#x27;s growth and audience retention. If the creator fails to address this issue, they may struggle to maintain a loyal audience and attract new viewers. On the other hand, this presents an opportunity for the creator to revamp their content strategy and improve engagement quality. By doing so, they can build a more loyal and interactive community, which can lead to increased viewership, likes, and comments.
+
+**Recommended Creator Actions**
+
+To address the low engagement and improve audience interaction, we recommend the following actions:
+
+1. Conduct audience research to better understand their preferences and interests.
+2. Revise the content strategy to incorporate more interactive and audience-driven elements.
+3. Consider creating more Q&amp;A sessions, live streams, or other interactive content formats.
+4. Respond to comments and engage with the audience to build relationships and gather feedback.
+
+By implementing these strategies, the creator can improve engagement quality, build a more loyal community, and increase the channel&#x27;s growth and success.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Recommended Actions</h2>
+      <ul class="recs"><li>Community engagement looks healthy. Keep monitoring new comments.</li></ul>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Reply History — What We Replied To</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>When</th><th>Author</th><th>Category</th><th>Original Comment</th><th>Our Reply</th><th>Status</th>
+          </tr></thead>
+          <tbody><tr><td colspan='6'>No reply history recorded</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Comments by Category</h2>
+      <div class='card' style='margin-bottom:16px'><h2>Positive Comments (0)</h2><p class='summary'>None</p></div>
+      <div class='card' style='margin-bottom:16px'><h2>Negative Comments (0)</h2><p class='summary'>None</p></div>
+      <div class='card' style='margin-bottom:16px'><h2>Neutral Comments (0)</h2><p class='summary'>None</p></div>
+      <div class='card' style='margin-bottom:16px'><h2>Questions (0)</h2><p class='summary'>None</p></div>
+      <div class='card' style='margin-bottom:16px'><h2>Suggestions (0)</h2><p class='summary'>None</p></div>
+      <div class='card' style='margin-bottom:16px'><h2>Spam (0)</h2><p class='summary'>None</p></div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>All Analyzed Comments (0)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Author</th><th>Category</th><th>Priority</th><th>Sentiment</th>
+            <th>Likes</th><th>Time</th><th>Comment</th>
+          </tr></thead>
+          <tbody><tr><td colspan='7'>No data</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Generated AI Replies (0)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Author</th><th>Category</th><th>Priority</th><th>Sentiment</th>
+            <th>Likes</th><th>Time</th><th>Original Comment</th><th>AI Reply</th>
+          </tr></thead>
+          <tbody><tr><td colspan='7'>No data</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">Generated by YouTube Community Manager Agent</div>
+  </div>
+</body>
+</html>

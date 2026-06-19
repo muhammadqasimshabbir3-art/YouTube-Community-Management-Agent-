@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Community Dashboard — @OldeWorldMelodies</title>
+  <style>
+    :root {
+      --bg: #0f0f0f; --card: #1a1a1a; --text: #f1f1f1; --muted: #aaaaaa;
+      --accent: #ff0000; --accent2: #cc0000; --border: #303030;
+      --green: #2ecc71; --yellow: #f1c40f; --red: #e74c3c; --blue: #3498db; --purple: #9b59b6;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Segoe UI', Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .header { background: linear-gradient(135deg, #1a1a1a 0%, #2d0a0a 100%); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+    .header h1 { margin: 0 0 8px; font-size: 1.8rem; }
+    .header .sub { color: var(--muted); }
+    .grid { display: grid; gap: 16px; }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+    .card h2 { margin: 0 0 14px; font-size: 1.1rem; color: #fff; border-bottom: 2px solid var(--accent); padding-bottom: 8px; }
+    .metric { text-align: center; }
+    .metric .val { font-size: 2rem; font-weight: 700; color: var(--accent); }
+    .metric .lbl { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .video-hero { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
+    .thumb { width: 100%; border-radius: 10px; aspect-ratio: 16/9; object-fit: cover; background: #222; }
+    .thumb.placeholder { display:flex; align-items:center; justify-content:center; min-height:120px; color:var(--muted); }
+    .meta dt { color: var(--muted); font-size: 0.8rem; margin-top: 10px; }
+    .meta dd { margin: 4px 0 0; font-weight: 600; }
+    .desc { color: #ccc; line-height: 1.5; white-space: pre-wrap; max-height: 160px; overflow: auto; }
+    .bar-row { margin-bottom: 12px; }
+    .bar-label { display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px; }
+    .bar-track { height: 10px; background: #2a2a2a; border-radius: 999px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 999px; }
+    .summary { line-height: 1.7; color: #ddd; white-space: pre-wrap; }
+    ul.recs { margin: 0; padding-left: 20px; line-height: 1.8; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th, td { border-bottom: 1px solid var(--border); padding: 10px 8px; text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--card); }
+    .comment-text { max-width: 320px; }
+    .reply { max-width: 260px; color: #9fe870; }
+    .error { max-width: 260px; color: var(--red); }
+    .table-wrap { max-height: 420px; overflow: auto; border: 1px solid var(--border); border-radius: 10px; }
+    .footer { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 28px; }
+    a { color: #3ea6ff; }
+    @media (max-width: 700px) { .video-hero { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>YouTube Community Dashboard</h1>
+      <div class="sub">@OldeWorldMelodies · Generated 2026-06-19 15:33:53</div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Video Overview</h2>
+      <div class="video-hero">
+        <img class="thumb" src="https://i.ytimg.com/vi/p6PvXDzklF0/maxresdefault.jpg" alt="Video thumbnail" />
+        <dl class="meta">
+          <dt>Title</dt><dd>Starfall Vale – Peaceful Fantasy Music &amp; Ambience</dd>
+          <dt>Video URL</dt><dd><a href="https://www.youtube.com/watch?v=p6PvXDzklF0">https://www.youtube.com/watch?v=p6PvXDzklF0</a></dd>
+          <dt>Video ID</dt><dd>p6PvXDzklF0</dd>
+          <dt>Views</dt><dd>1.8K views</dd>
+          <dt>Likes</dt><dd>like this video along with 83 other people</dd>
+          <dt>Dislikes</dt><dd>Dislike this video</dd>
+          <dt>Duration</dt><dd>1:51:55</dd>
+          <dt>Category</dt><dd></dd>
+          <dt>Subscribers</dt><dd>32K subscribers</dd>
+          <dt>Comments (on video)</dt><dd>10 Comments</dd>
+          <dt>Published</dt><dd>2026-06-11</dd>
+          <dt>Channel URL</dt><dd><a href="https://www.youtube.com/@OldeWorldMelodies/videos">https://www.youtube.com/@OldeWorldMelodies/videos</a></dd>
+        </dl>
+      </div>
+      <dt style="color:var(--muted);font-size:0.8rem;margin-top:16px">What this video is about</dt>
+      <div class="summary">Here&#x27;s a 2-4 sentence summary of the YouTube video for a community manager:
+
+This video, &quot;Starfall Vale,&quot; features peaceful fantasy music and ambience designed to create a calm space for relaxation, focus, or creative pursuits. The music is suitable for various activities such as sleep, studying, meditation, gaming, writing, and stress relief, and is characterized by low dynamics and soothing harmonies. The video aims to provide a serene atmosphere, allowing viewers to unwind and escape into their own world. The target audience can use this video as a background for their daily activities, and the creator encourages viewers to subscribe for more epic journeys.</div>
+      <dt style="color:var(--muted);font-size:0.8rem;margin-top:16px">Full description</dt>
+      <div class="desc">Starfall Vale is about one of those quiet and warm summer nights when the world feels far away for a while.
+
+Imagine yourself resting beneath a sky full of bright stars, with the valley open around you and the mountains fading into the dark. There are no roads to follow for now, no noise, no rush - just warm night air, distant crickets, and that calm feeling you get when everything finally slows down.
+
+The music is peaceful and fantasy-inspired, mixed with night ambience to create a calm space for sleep, reading, writing, studying, gaming, or simply sitting with your own thoughts. It stays soft and unhurried, without big dramatic moments, so it can remain in the background while you rest, focus, or drift into your own world.
+
+I hope Starfall Vale brings you peace, wherever you are listening from.
+
+Use this for
+• Sleep &amp; deep relaxation - low dynamics, no sudden changes
+• Studying, reading &amp; focus - steady textures for concentration
+• Meditation &amp; mindfulness - slow, soothing harmonies
+• Gaming &amp; TTRPG / DM prep - immersive RPG ambience (no vocals)
+• Writing, worldbuilding &amp; creative flow - a quiet space for ideas
+• Evening wind-down &amp; stress relief - peaceful background
+
+
+📌 Wallpapers, Support the Channel &amp; Get Exclusive Goodies
+Want to support the music and get something in return? You can grab wallpapers and other perks on BuyMeACoffee.
+☕ BuyMeACoffee – Wallpapers &amp; tips:
+https://buymeacoffee.com/oldeworldmel...
+
+
+
+📜 Chapters:
+00:00 Under Watchful Stars
+02:23 A Sky Worth Remembering
+05:16 Tomorrow Can Wait
+07:52 A Field Above the World
+10:44 Beauty of the Night
+13:36 Stars, Somehow Closer
+15:33 A Letter Never Sent
+18:05 Old Roads Under New Stars
+20:54 A Place to Be Small
+24:44 Under the Open Sky
+27:11 No Kingdom, No Quest
+30:02 The Last Light
+33:04 A Pause in the Journey
+35:35 Starfall Vale
+
+
+🔥 Subscribe for more epic journeys.
+🎧 Like, comment, and share if you feel the calm embrace of the fantasy world.
+👑 Thank you for watching!
+🔔 Turn on notifications so you never miss new uploads!
+
+
+Music by Olde World Melodies 🎵
+Visuals &amp; Animations by Olde World Melodies 🎬
+© All Rights Reserved. Unauthorized reproduction or distribution of this copyrighted work is illegal. Use without explicit permission may result in copyright claims or legal action.
+
+
+#fantasymusic     #medievalmusic     #relaxingmusic     #naturesounds     #sleepmusic     #studymusic     #readingmusic     #rpgambience     #enchantingmusic    #worldbuilding     #gamingmusic  #dndmusic</div>
+    </div>
+
+    <div class="grid grid-4" style="margin-bottom:24px">
+      <div class="card metric"><div class="val">9</div><div class="lbl">Comments Analyzed</div></div>
+      <div class="card metric"><div class="val">10</div><div class="lbl">Reported on Video</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">Top Positive Targets</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">Replies Generated</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">Replies Posted</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">Replies Failed</div></div>
+      <div class="card metric"><div class="val">0</div><div class="lbl">New Comments Posted</div></div>
+      <div class="card metric"><div class="val">0.81</div><div class="lbl">Avg Sentiment Score</div></div>
+      <div class="card metric"><div class="val">7</div><div class="lbl">High Priority</div></div>
+      <div class="card metric"><div class="val">88.9%</div><div class="lbl">Positive</div></div>
+      <div class="card metric"><div class="val">0.0%</div><div class="lbl">Negative</div></div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:24px">
+      <div class="card">
+        <h2>Comment Categories</h2>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Positive</span><span>8 (88.9%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:88.9%;background:var(--green)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Negative</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:var(--red)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Neutral</span><span>1 (11.1%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:11.1%;background:#95a5a6"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Questions</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:var(--blue)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Suggestions</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:var(--purple)"></div></div>
+    </div>
+        
+    <div class="bar-row">
+      <div class="bar-label"><span>Spam</span><span>0 (0.0%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#7f8c8d"></div></div>
+    </div>
+      </div>
+      <div class="card">
+        <h2>Executive Summary (LLM)</h2>
+        <div class="summary">**Executive Summary: @OldeWorldMelodies Community Management Dashboard Report**
+
+The Starfall Vale video, published on June 11, 2026, has garnered 1.8K views and 84 likes, indicating a moderate level of engagement. The video&#x27;s description effectively transports viewers to a peaceful atmosphere, resonating with the audience. However, the comment section reveals a need for improvement in community interaction.
+
+**Audience Sentiment and Engagement Quality**
+
+The video&#x27;s positive sentiment is reflected in the 8 out of 9 comments, which suggests that viewers appreciate the calming atmosphere and the music. However, the high number of unanswered comments (9) indicates a missed opportunity for engagement and community building. This highlights the need for the creator to respond to comments and foster a more interactive community.
+
+**Risks and Opportunities**
+
+The primary risk is the lack of engagement beyond likes and views, which may indicate a need for more interactive content or community-driven initiatives. On the other hand, the video&#x27;s peaceful atmosphere and calming music provide opportunities for the creator to explore related themes, such as relaxation techniques or nature-inspired content. By leveraging these opportunities, the creator can expand their audience and build a loyal community.
+
+**Recommended Creator Actions**
+
+To improve community engagement and sentiment, we recommend the following actions:
+
+1. Respond to comments and engage with the audience to foster a sense of community.
+2. Explore related themes, such as relaxation techniques or nature-inspired content, to expand the audience and build a loyal community.
+3. Consider implementing community-driven initiatives, such as Q&amp;A sessions or live streams, to encourage audience participation and interaction.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Recommended Actions</h2>
+      <ul class="recs"><li>Respond to 9 unanswered comments to boost engagement.</li><li>Reply workflow targets up to 5 top positive comments (8 positive found after full analysis).</li><li>Focus on 7 high-priority engagement opportunities first.</li></ul>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Reply History — What We Replied To</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>When</th><th>Author</th><th>Category</th><th>Original Comment</th><th>Our Reply</th><th>Status</th>
+          </tr></thead>
+          <tbody><tr><td colspan='6'>No reply history recorded</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Failed Reply Attempts (0)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Author</th><th>Original Comment</th><th>Attempted Reply</th><th>Error</th>
+          </tr></thead>
+          <tbody><tr><td colspan='4'>No failed reply attempts</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>New Video Comment (1)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Comment Text</th><th>Status</th><th>Error</th>
+          </tr></thead>
+          <tbody><tr><td class='comment-text'>&quot;Thanks for drifting into Starfall Vale with me, everyone! I&#x27;m so glad this peaceful fantasy music helped you unwind and escape. What&#x27;s your favorite way to use this track - gaming, studying, or just relaxing?&quot;</td><td>Not posted</td><td class='error'></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Comments by Category</h2>
+      
+    <div class="card" style="margin-bottom:16px;border-left:4px solid var(--green)">
+      <h2>Positive Comments (8)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Author</th><th>Priority</th><th>Sentiment</th><th>Likes</th><th>Time</th><th>Comment</th>
+          </tr></thead>
+          <tbody><tr><td>@OldeWorldMelodies</td><td>positive</td><td>high</td><td>0.9</td><td>3</td><td>7 days ago (edited)</td><td class='comment-text'>Thank you for listening and supporting Olde World Melodies. If this video gives you a moment of calm, a like, comment, or subscribe is always appreciated 
+Question for everyone: would you prefer the nature sounds to be a little quieter in future videos, or is the current volume good for you?</td></tr>
+<tr><td>@EldermereMedievalMusic</td><td>positive</td><td>high</td><td>0.8</td><td>1</td><td>7 days ago</td><td class='comment-text'>This feels like the kind of place every fantasy traveler hopes to find before nightfall.</td></tr>
+<tr><td>@Hanyiiiii</td><td>positive</td><td>high</td><td>0.9</td><td>2</td><td>6 days ago</td><td class='comment-text'>THANK YOU for making these kinds of videos bro I appreciate it</td></tr>
+<tr><td>@BardoftheGreenwood</td><td>positive</td><td>high</td><td>1.0</td><td>1</td><td>6 days ago</td><td class='comment-text'>Authenticity at its finest</td></tr>
+<tr><td>@grimakorea5271</td><td>positive</td><td>high</td><td>0.9</td><td>0</td><td>4 hours ago</td><td class='comment-text'>your playlist so good! keep working plz.</td></tr>
+<tr><td>@Mr._Dream_1776</td><td>positive</td><td>medium</td><td>0.8</td><td>0</td><td>7 days ago</td><td class='comment-text'>A really gorgeous view.</td></tr>
+<tr><td>@captainaktual</td><td>positive</td><td>high</td><td>1.0</td><td>0</td><td>5 days ago</td><td class='comment-text'>thank you thank you thank you</td></tr>
+<tr><td>@gurmannatkaur-w5v7y</td><td>positive</td><td>high</td><td>1.0</td><td>0</td><td>3 days ago</td><td class='comment-text'>THANKU BRO I love this video</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+      <div class='card' style='margin-bottom:16px'><h2>Negative Comments (0)</h2><p class='summary'>None</p></div>
+      
+    <div class="card" style="margin-bottom:16px;border-left:4px solid #95a5a6">
+      <h2>Neutral Comments (1)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Author</th><th>Priority</th><th>Sentiment</th><th>Likes</th><th>Time</th><th>Comment</th>
+          </tr></thead>
+          <tbody><tr><td>@Hanyiiiii</td><td>neutral</td><td>low</td><td>0.0</td><td>1</td><td>1 day ago</td><td class='comment-text'>43:23  i remember this one from another video of yours</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+      <div class='card' style='margin-bottom:16px'><h2>Questions (0)</h2><p class='summary'>None</p></div>
+      <div class='card' style='margin-bottom:16px'><h2>Suggestions (0)</h2><p class='summary'>None</p></div>
+      <div class='card' style='margin-bottom:16px'><h2>Spam (0)</h2><p class='summary'>None</p></div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>All Analyzed Comments (9)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Author</th><th>Category</th><th>Priority</th><th>Sentiment</th>
+            <th>Likes</th><th>Time</th><th>Comment</th>
+          </tr></thead>
+          <tbody><tr><td>@OldeWorldMelodies</td><td>positive</td><td>high</td><td>0.9</td><td>3</td><td>7 days ago (edited)</td><td class='comment-text'>Thank you for listening and supporting Olde World Melodies. If this video gives you a moment of calm, a like, comment, or subscribe is always appreciated 
+Question for everyone: would you prefer the nature sounds to be a little quieter in future videos, or is the current volume good for you?</td></tr>
+<tr><td>@EldermereMedievalMusic</td><td>positive</td><td>high</td><td>0.8</td><td>1</td><td>7 days ago</td><td class='comment-text'>This feels like the kind of place every fantasy traveler hopes to find before nightfall.</td></tr>
+<tr><td>@Hanyiiiii</td><td>positive</td><td>high</td><td>0.9</td><td>2</td><td>6 days ago</td><td class='comment-text'>THANK YOU for making these kinds of videos bro I appreciate it</td></tr>
+<tr><td>@BardoftheGreenwood</td><td>positive</td><td>high</td><td>1.0</td><td>1</td><td>6 days ago</td><td class='comment-text'>Authenticity at its finest</td></tr>
+<tr><td>@Hanyiiiii</td><td>neutral</td><td>low</td><td>0.0</td><td>1</td><td>1 day ago</td><td class='comment-text'>43:23  i remember this one from another video of yours</td></tr>
+<tr><td>@grimakorea5271</td><td>positive</td><td>high</td><td>0.9</td><td>0</td><td>4 hours ago</td><td class='comment-text'>your playlist so good! keep working plz.</td></tr>
+<tr><td>@Mr._Dream_1776</td><td>positive</td><td>medium</td><td>0.8</td><td>0</td><td>7 days ago</td><td class='comment-text'>A really gorgeous view.</td></tr>
+<tr><td>@captainaktual</td><td>positive</td><td>high</td><td>1.0</td><td>0</td><td>5 days ago</td><td class='comment-text'>thank you thank you thank you</td></tr>
+<tr><td>@gurmannatkaur-w5v7y</td><td>positive</td><td>high</td><td>1.0</td><td>0</td><td>3 days ago</td><td class='comment-text'>THANKU BRO I love this video</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Top Positive Reply Targets (0)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Rank</th><th>Author</th><th>Likes</th><th>Sentiment</th><th>Comment</th>
+          </tr></thead>
+          <tbody><tr><td colspan='5'>No positive reply targets selected</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px">
+      <h2>Generated AI Replies (0)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Author</th><th>Category</th><th>Priority</th><th>Sentiment</th>
+            <th>Likes</th><th>Time</th><th>Original Comment</th><th>AI Reply</th>
+          </tr></thead>
+          <tbody><tr><td colspan='7'>No data</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">Generated by YouTube Community Manager Agent</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,251 @@
+Metadata-Version: 2.4
+Name: youtube-community-management-agent
+Version: 0.2.0
+Summary: YouTube Community Manager Agent with Playwright automation, comment analysis, PDF reports, and email.
+Author-email: Muhammad Qasim Shabbir <muhammadqasimshabbir3@gmail.com>
+License: MIT
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: langgraph>=1.0.0
+Requires-Dist: python-dotenv>=1.0.1
+Requires-Dist: langchain>=0.1.0
+Requires-Dist: langchain-groq>=0.1.0
+Requires-Dist: langchain-community>=0.1.0
+Requires-Dist: requests>=2.31.0
+Requires-Dist: reportlab>=4.0.0
+Requires-Dist: beautifulsoup4>=4.12.0
+Requires-Dist: streamlit>=1.28.0
+Requires-Dist: playwright>=1.40.0
+Provides-Extra: dev
+Requires-Dist: mypy>=1.11.1; extra == "dev"
+Requires-Dist: ruff>=0.6.1; extra == "dev"
+Requires-Dist: langgraph-cli[inmem]>=0.4.14; extra == "dev"
+Requires-Dist: pre-commit; extra == "dev"
+Provides-Extra: ui
+Requires-Dist: streamlit>=1.28.0; extra == "ui"
+Dynamic: license-file
+
+# YouTube Community Manager Agent
+
+**A production-ready LangGraph agent for automated YouTube channel engagement**
+
+The YouTube Community Manager Agent logs into YouTube with your credentials, navigates to a **specific target channel** you configure, opens that channel's **latest video**, and then analyzes comments, generates AI replies, builds PDF reports, and emails summaries — all through a LangGraph workflow with Playwright browser automation.
+
+| | |
+|---|---|
+| **Author** | Muhammad Qasim Shabbir |
+| **Email** | [muhammadqasimshabbir3@gmail.com](mailto:muhammadqasimshabbir3@gmail.com) |
+| **Version** | 0.2.0 |
+| **License** | MIT |
+
+---
+
+## How It Works
+
+The agent uses **two separate concepts** in `.env`:
+
+| Role | Variables | Purpose |
+|------|-----------|---------|
+| **Login account** | `YOUTUBE_EMAIL`, `YOUTUBE_PASSWORD` | The Google account used to sign in, browse YouTube, and post replies |
+| **Target channel** | `YOUTUBE_CHANNEL_NAME`, `YOUTUBE_CHANNEL_URL` | The **specific channel** where work is performed — this does **not** have to be the login account's channel |
+
+### Runtime flow
+
+```
+1. Log in          →  YOUTUBE_EMAIL / YOUTUBE_PASSWORD
+2. Open channel    →  YOUTUBE_CHANNEL_NAME (or YOUTUBE_CHANNEL_URL)
+3. Latest video    →  Agent opens the target channel's most recent upload
+4. Analyze         →  Scrape comments, classify sentiment, detect unanswered
+5. Reply           →  Generate (and optionally post) AI replies on that video
+6. Report          →  Generate PDF and optionally email it
+```
+
+```
+┌──────────────────┐      ┌─────────────────────────┐      ┌────────────────────────┐
+│  Login Account   │      │   Target Channel          │      │   Latest Video         │
+│  (your .env      │ ───▶ │   YOUTUBE_CHANNEL_NAME    │ ───▶ │   Comments scraped,    │
+│   credentials)   │      │   e.g. MrBeast            │      │   analyzed & replied   │
+└──────────────────┘      └─────────────────────────┘      └────────────────────────┘
+```
+
+> **Example:** You log in as `manager@gmail.com`, set `YOUTUBE_CHANNEL_NAME=MrBeast`, click **Analyze** — the agent signs in, goes to the MrBeast channel, opens its latest video, and runs the full pipeline on that video's comments.
+
+---
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| **Browser automation** | Playwright-based YouTube login with session persistence |
+| **YouTube login** | Automated Google sign-in via login credentials in `.env` |
+| **Target channel navigation** | Opens the specific channel set in `YOUTUBE_CHANNEL_NAME` |
+| **Latest video analysis** | Scrapes and analyzes comments on the channel's most recent video |
+| **Sentiment analysis** | LLM classification: positive, negative, neutral, question, suggestion, spam |
+| **AI-generated replies** | Community-manager-style responses filtered by category |
+| **Automated posting** | Optional browser-based reply posting on the target video |
+| **HTML dashboard report** | Comprehensive video + comment dashboard with LLM executive summary |
+| **PDF reporting** | ReportLab summary reports with tables |
+| **Email automation** | Gmail SMTP delivery with PDF attachments |
+| **LangGraph workflows** | Linear pipeline with 13 graph nodes |
+| **Streamlit UI** | Dashboard with channel inputs and metric widgets |
+
+---
+
+## Workflow
+
+```
+START
+  → prepare_input
+  → decision_agent
+  → login_youtube              ← sign in with YOUTUBE_EMAIL
+  → fetch_channel_data         ← open YOUTUBE_CHANNEL_NAME → latest video
+  → analyze_comments
+  → generate_replies
+  → post_replies
+  → generate_html_report    ← comprehensive dashboard (.html)
+  → generate_pdf_report
+  → email_report            ← emails HTML + PDF when EMAIL_REPORTS=true
+  → END
+```
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Orchestration | LangGraph `StateGraph` |
+| LLM | Groq `llama-3.1-8b-instant` |
+| Browser | Playwright (Chromium) |
+| PDF | ReportLab |
+| Email | Gmail SMTP |
+| UI | Streamlit |
+
+---
+
+## Quick Start
+
+### 1. Install dependencies
+
+```bash
+./setup.sh
+```
+
+Or manually:
+
+```bash
+uv sync
+uv run playwright install chromium
+cp .env.example .env
+```
+
+### 2. Configure `.env`
+
+```env
+# LLM
+GROQ_API_KEY=gsk_your_key_here
+
+# Login account (used to sign in and post replies)
+YOUTUBE_EMAIL=manager@gmail.com
+YOUTUBE_PASSWORD=your_password_here
+
+# Target channel (where the agent does its work — any channel)
+YOUTUBE_CHANNEL_NAME=MrBeast
+YOUTUBE_CHANNEL_URL=
+
+# Safety defaults
+ENABLE_COMMENT_REPLIES=false
+EMAIL_REPORTS=false
+```
+
+| Variable | What it does |
+|----------|--------------|
+| `YOUTUBE_EMAIL` / `YOUTUBE_PASSWORD` | Signs into YouTube |
+| `YOUTUBE_CHANNEL_NAME` | Navigates to this channel and works on its **latest video** |
+| `YOUTUBE_CHANNEL_URL` | Optional — use instead of name if you have the direct URL |
+
+### 3. Run the UI
+
+```bash
+./start.sh ui
+```
+
+Open `http://localhost:8501` and click **Analyze**. The UI pre-fills the channel name from `YOUTUBE_CHANNEL_NAME` — you can override it per run.
+
+---
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GROQ_API_KEY` | — | Required for LLM analysis and replies |
+| `YOUTUBE_EMAIL` | — | **Login account** — signs into YouTube |
+| `YOUTUBE_PASSWORD` | — | **Login account** password |
+| `YOUTUBE_CHANNEL_NAME` | — | **Target channel** name (e.g. `MrBeast`) — latest video is analyzed |
+| `YOUTUBE_CHANNEL_URL` | — | Optional target channel URL (skips name search) |
+| `ENABLE_COMMENT_REPLIES` | `false` | Post replies on the target video |
+| `EMAIL_REPORTS` | `false` | Email HTML dashboard + PDF reports |
+| `REPLY_TO_POSITIVE` | `true` | Generate replies for positive comments |
+| `REPLY_TO_NEGATIVE` | `false` | Generate replies for negative comments |
+| `REPLY_TO_NEUTRAL` | `false` | Generate replies for neutral comments |
+| `REPLY_TO_QUESTIONS` | `true` | Generate replies for questions |
+| `REPLY_TO_SUGGESTIONS` | `true` | Generate replies for suggestions |
+| `REPLY_TO_SPAM` | `false` | Generate replies for spam |
+| `BROWSER_HEADLESS` | `true` | Run browser without visible window |
+| `MAX_VIDEOS_TO_SCAN` | `1` | Videos to scan (`1` = latest video only) |
+| `MAX_COMMENTS_PER_VIDEO` | `20` | Max comments scraped per video |
+| `GMAIL_SMTP_USER` | — | Sender email for reports |
+| `GMAIL_APP_PASSWORD` | — | Gmail app password |
+| `GMAIL_DEFAULT_RECIPIENT` | — | Default report recipient |
+
+---
+
+## Project Structure
+
+```
+src/agent/
+├── graph.py                  # LangGraph definition (13 nodes)
+├── config.py                 # Login + target channel config from .env
+├── routing.py                # YouTube intent detection
+├── task_planner.py           # Workflow task planning
+├── workflow_executor.py      # Pipeline step execution
+└── custom_tools/
+    ├── browser_tools.py      # Playwright login & session
+    ├── youtube_tools.py      # Target channel navigation & comment scraping
+    ├── comment_analyzer.py   # LLM comment classification
+    ├── reply_generator.py    # AI reply generation
+    ├── pdf_generator.py      # PDF report generation
+    ├── html_report_generator.py  # HTML dashboard reports
+    └── email_tools.py        # Gmail SMTP
+streamlit_ui.py               # Dashboard UI
+```
+
+---
+
+## Reply Filter Examples
+
+Configure any combination in `.env`:
+
+- **Positive only:** `REPLY_TO_POSITIVE=true`, all others `false`
+- **Questions + Suggestions:** `REPLY_TO_QUESTIONS=true`, `REPLY_TO_SUGGESTIONS=true`
+- **All categories:** Set all `REPLY_TO_*` to `true`
+
+When `ENABLE_COMMENT_REPLIES=false`, replies are generated but **not posted** to the target video.
+
+---
+
+## Commands
+
+```bash
+./start.sh ui       # Streamlit dashboard → :8501
+./start.sh server   # LangGraph Studio → :2024
+./start.sh both     # Both services
+./start.sh stop     # Stop services
+```
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).

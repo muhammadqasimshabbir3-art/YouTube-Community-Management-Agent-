@@ -1,0 +1,31 @@
+# Secrets and local env
+.env
+.env.local
+.env.*.local
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# LangGraph local runtime
+.langgraph_api/
+
+# Browser session and generated data
+data/youtube_session.json
+data/reply_history.json
+reports/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.idea/
+
+# OS
+.DS_Store
