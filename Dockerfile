@@ -1,4 +1,4 @@
-# LangGraph API production image (Fly.io).
+# LangGraph API production image (Railway).
 # Regenerate base layers: uv run langgraph dockerfile -c langgraph.json Dockerfile
 # Keep the Playwright install block below the dependency install step.
 FROM langchain/langgraph-api:3.12
