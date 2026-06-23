@@ -30,6 +30,13 @@ def _run_blocking_with_skip(func: Callable[..., T], /, *args, **kwargs) -> T:
     filesystem and other sync calls on threads that inherit the ASGI event-loop
     context. Mark these worker calls as intentionally blocking.
     """
+    # Hide any event loop that might have been automatically created in this thread
+    # by frameworks like AnyIO/Starlette, which causes Playwright sync API to crash.
+    try:
+        asyncio.set_event_loop(None)
+    except Exception:
+        pass
+
     try:
         from blockbuster.blockbuster import blockbuster_skip
     except ImportError:
